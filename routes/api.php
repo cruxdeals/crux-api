@@ -30,7 +30,7 @@ Route::prefix('auth')->group(function () {
     Route::post('change-password', [AdminAuth::class, 'changePassword']);
 });
 Route::prefix('cooperative')->group(function () {
-    Route::post('create', [CooperativeController::class, 'createCooperative']);
+
     Route::post('member/login', [CooperativeController::class, 'loginCooperative']);
     Route::post('loan/product/add', [CooperativeController::class, 'createLoanProduct']);
     Route::post('loan/product/edit', [CooperativeController::class, 'editLoanProduct']);
@@ -60,5 +60,6 @@ Route::prefix('admin')->group(function () {
     Route::post('cooperative/members/list', [AdminController::class, 'listCooperativeMembers']);
     Route::post('cooperative/edit', [AdminController::class, 'EditCooperative']);
     Route::post('cooperative/status/change', [AdminController::class, 'changeCooperativeStatus']);
+    Route::post('cooperative/create', [CooperativeController::class, 'createCooperative']);
 });
 
