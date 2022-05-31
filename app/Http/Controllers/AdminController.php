@@ -295,6 +295,7 @@ class AdminController extends Controller
 
     public function changeCooperativeStatus(ChangeCooperativeStatusRequest $request)
     {
+        // 3 deleted
         if (!$coop = Cooperative::where('id', $request->id)->first()) {
             return response()->json(['status' => 'error', 'message' => "Cooperative Not Found"], 400);
         }
