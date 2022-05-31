@@ -4,7 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Member;
 use App\Models\Cooperative;
+use App\Models\LoanProduct;
 use Illuminate\Http\Request;
+use App\Http\Requests\Loan\EditLoanProductRequest;
+use App\Http\Requests\Loan\CreateLoanProductRequest;
 use App\Http\Requests\Cooperative\LoginCooperativeRequest;
 use App\Http\Requests\Cooperative\CreateCooperativeRequest;
 
@@ -26,6 +29,7 @@ class CooperativeController extends Controller
             'coop_type' => $request->coop_type,
             'affiliate_organization' => $request->affiliate_organization,
             'address' => $request->address,
+            'country' => $request->country,
             'city' => $request->city,
             'state' => $request->state,
             'coop_authid' => $coop_authid,
@@ -69,4 +73,43 @@ class CooperativeController extends Controller
         ], 200);
     }
 
+    //create cooperative loan product
+    public function createLoanProduct(CreateLoanProductRequest $request)
+    {
+        $field = [
+            'coop_id' => $request->coop_id,
+            'product_name' => $request->product_name,
+            'interest_rate' => $request->interest_rate,
+            'maximum_amount' => $request->maximum_amount,
+            'minimum_amount' => $request->minimum_amount,
+            'product_id' => $request->product_id,
+            'balance' => $request->balance
+        ];
+
+        $create = LoanProduct::create($field);
+        if($create){
+            return response()->json(['status'=>'success','message'=>'Loan Product Created Successfully'],200);
+        }
+    }
+
+    public function editLoanProduct(EditLoanProductRequest $request)
+    {
+        if (!$loanproduct = LoanProduct::where('id', $request->id)->first()) {
+            return response()->json(['status' => 'error', 'message' => "Loan Product Not Found"], 400);
+        }
+
+        $field = [
+            'product_name' => $request->product_name,
+            'interest_rate' => $request->interest_rate,
+            'maximum_amount' => $request->maximum_amount,
+            'minimum_amount' => $request->minimum_amount,
+            'product_id' => $request->product_id,
+            'balance' => $request->balance
+        ];
+
+        $update = $loanproduct->update($field);
+        if($update){
+            return response()->json(['status'=>'success','message'=>'Loan Product Updated Successfully'],200);
+        }
+    }
 }

@@ -63,6 +63,7 @@ class LoanController extends Controller
         $monthly_repayment = ($interest_rate * $amount * $duration) + $amount;
 
         $monthly_repayment = $monthly_repayment / $duration;
+        $monthly_repayment = number_format((float)$monthly_repayment, 2, '.', '');
         $fees = 0;
 
         for($i= 1; $i <= $approvals; $i++){
@@ -99,6 +100,6 @@ class LoanController extends Controller
 
     }
 
-    
+
 
 }

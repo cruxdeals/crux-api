@@ -7,12 +7,13 @@ use App\Models\Member;
 use App\Models\Cooperative;
 use App\Models\LoanProduct;
 use Illuminate\Http\Request;
-use App\services\MonnifyServices;
 use App\services\VerificationServices;
 use App\Http\Requests\Loan\OneLoanRequest;
 use App\Http\Requests\Loan\AllLoansRequest;
+use App\Http\Requests\Loan\EditLoanRequest;
 use App\Http\Requests\Loan\CancelLoanRequest;
 use App\Http\Requests\Loan\DisburseLoanRequest;
+use App\Http\Requests\Loan\EditLoanAmountRequest;
 use App\Http\Requests\Member\CreateMemberRequest;
 use App\Http\Requests\Loan\DisbursementCheckRequest;
 use App\Http\Requests\Cooperative\OneCooperativeRequest;
@@ -33,13 +34,13 @@ class AdminController extends Controller
         $bvn = $request->bvn;
         $bvn_data = VerificationServices::resolveBVN($bvn);
         $bvn_data = $bvn_data->getOriginalContent();
-        if($bvn_data['status'] != 'success'){
-            return response()->json(['status'=>'error','message'=>'Error verifying BVN'],400);
+        if ($bvn_data['status'] != 'success') {
+            return response()->json(['status' => 'error', 'message' => 'Error verifying BVN'], 400);
         }
 
-        if($request->admin_status == "0"){
+        if ($request->admin_status == "0") {
             $admin_status = "0";
-        }else{
+        } else {
             $admin_status = "1";
         }
 
@@ -62,12 +63,12 @@ class AdminController extends Controller
             'nin' => $request->nin,
             'coop_id' => $request->coop_id,
             'password' => md5($request->password),
-            'admin_status' => $admin_status
+            'admin_status' => $admin_status,
         ];
 
         $create = Member::create($field);
-        if($create){
-            return response()->json(['status'=>'success','message'=>'Member Created Successfully','id'=>$create->id],200);
+        if ($create) {
+            return response()->json(['status' => 'success', 'message' => 'Member Created Successfully', 'id' => $create->id], 200);
         }
     }
 
@@ -135,7 +136,7 @@ class AdminController extends Controller
         $coop->commission_balance = $commission;
         $coop->save();
 
-        //make payment
+        //make payment and minus amount from product balance
 
         // if (!$loan->payment_reference) {
         //     $payment_reference = "LOAN" . $loan->loanid . "_" . date("YmdHis");
@@ -192,12 +193,12 @@ class AdminController extends Controller
             });
         }
 
-        $loans = $loans->where('status',$request->status)->where('loan_product_id',$request->product_id)->orderBy('id','DESC')->with('member')->paginate($request->page_size);
+        $loans = $loans->where('status', $request->status)->where('loan_product_id', $request->product_id)->orderBy('id', 'DESC')->with('member')->paginate($request->page_size);
 
         // $loans = $loans->where('status',$request->status)->orderBy('id','DESC')->with(['member'=> function($query){
         //     $query->select('firstname','lastname','email','telephone');
         // }])->paginate($request->page_size);
-        return response()->json(['status'=>'success','loans'=>$loans],200);
+        return response()->json(['status' => 'success', 'loans' => $loans], 200);
 
     }
 
@@ -208,7 +209,7 @@ class AdminController extends Controller
         }
         $loan->status = "3";
         $loan->save();
-        return response()->json(['status'=>'success', 'message'=>'Loan Cancelled Successfully'],400);
+        return response()->json(['status' => 'success', 'message' => 'Loan Cancelled Successfully'], 400);
     }
 
     public function viewOneCooperative(OneCooperativeRequest $request)
@@ -217,46 +218,46 @@ class AdminController extends Controller
             return response()->json(['status' => 'error', 'message' => "Cooperative Not Found"], 400);
         }
 
-        return response()->json(['status'=>'success','cooperative'=>$coop],200);
+        return response()->json(['status' => 'success', 'cooperative' => $coop], 200);
     }
 
     public function listCooperativeMembers(ListCooperativeMembersRequest $request)
     {
         $members = Member::query();
-        if($request->search_text){
+        if ($request->search_text) {
             $search_text = $request->search_text;
-            $members = $members->where(function($query) use ($search_text){
-                $query->where('member_id',$search_text)
-                ->orWhere('firstname','LIKE',"%{$search_text}%")
-                ->orWhere('lastname','LIKE', "%{$search_text}%")
-                ->orWhere('email',$search_text)
-                ->orWhere('telephone', $search_text)
-                ->orWhere('bvn',$search_text)
-                ->orWhere('nin',$search_text);
+            $members = $members->where(function ($query) use ($search_text) {
+                $query->where('member_id', $search_text)
+                    ->orWhere('firstname', 'LIKE', "%{$search_text}%")
+                    ->orWhere('lastname', 'LIKE', "%{$search_text}%")
+                    ->orWhere('email', $search_text)
+                    ->orWhere('telephone', $search_text)
+                    ->orWhere('bvn', $search_text)
+                    ->orWhere('nin', $search_text);
             });
         }
 
-        $members = $members->where('coop_id',$request->coop_id)->orderBy('id','DESC')->paginate($request->page_size);
+        $members = $members->where('coop_id', $request->coop_id)->orderBy('id', 'DESC')->paginate($request->page_size);
 
-        return response()->json(['status'=>'success','members'=>$members],200);
+        return response()->json(['status' => 'success', 'members' => $members], 200);
 
     }
 
     public function listCooperatives(ListCooperativesRequest $request)
     {
         $cooperatives = Cooperative::query();
-        if($request->search_text){
+        if ($request->search_text) {
             $search_text = $request->search_text;
-            $cooperatives = $cooperatives->where(function($query) use ($search_text){
-                $query->where('coop_id',$search_text)
-                ->orWhere('coop_name', 'LIKE', "%{$search_text}%")
-                ->orWhere('email',$search_text)
-                ->orWhere('telephone',$search_text);
+            $cooperatives = $cooperatives->where(function ($query) use ($search_text) {
+                $query->where('coop_id', $search_text)
+                    ->orWhere('coop_name', 'LIKE', "%{$search_text}%")
+                    ->orWhere('email', $search_text)
+                    ->orWhere('telephone', $search_text);
             });
         }
 
-        $cooperatives = $cooperatives->orderBy('id','DESC')->paginate($request->page_szie);
-        return response()->json(['status'=>'success','cooperatives'=>$cooperatives],200);
+        $cooperatives = $cooperatives->orderBy('id', 'DESC')->where('status',$request->status)->paginate($request->page_szie);
+        return response()->json(['status' => 'success', 'cooperatives' => $cooperatives], 200);
     }
 
     public function EditCooperative(EditCooperativeRequest $request)
@@ -287,8 +288,8 @@ class AdminController extends Controller
         ];
 
         $update = $coop->update($field);
-        if($update){
-            return response()->json(['status'=>'success','message'=>'cooperative updated successfully'],200);
+        if ($update) {
+            return response()->json(['status' => 'success', 'message' => 'cooperative updated successfully'], 200);
         }
     }
 
@@ -302,6 +303,35 @@ class AdminController extends Controller
         $coop->status = $status;
         $coop->save();
 
-        return response()->json(['status'=>'success','message'=>'Status Changed Successfully'],200);
+        return response()->json(['status' => 'success', 'message' => 'Status Changed Successfully'], 200);
+    }
+
+    public function editLoanAmount(EditLoanAmountRequest $request)
+    {
+        if (!$loan = Loan::where('id', $request->id)->with('member')->first()) {
+            return response()->json(['status' => 'error', 'message' => "Loan Not Found"], 400);
+        }
+        $amount = (int) $request->amount;
+        $duration = (int) $request->duration;
+        $coop_id = $loan->coop_id;
+
+        $coop = Cooperative::where('coop_id', $coop_id)->first();
+        $interest_rate = $coop->interest_rate;
+        $monthly_interest = $interest_rate * $amount;
+        $monthly_repayment = ($interest_rate * $amount * $duration) + $amount;
+        $monthly_repayment = $monthly_repayment / $duration;
+        $monthly_repayment = number_format((float)$monthly_repayment, 2, '.', '');
+
+        $field = [
+            'amount' => $amount,
+            'duration' => $duration,
+            'repayment' => $monthly_repayment,
+            'monthly_interest' => $monthly_interest,
+        ];
+
+        $update = $loan->update($field);
+        if($update){
+            return response()->json(['status'=>'success', 'message'=>'Loan Updated Successfully'],200);
+        }
     }
 }

@@ -32,6 +32,8 @@ Route::prefix('auth')->group(function () {
 Route::prefix('cooperative')->group(function () {
     Route::post('create', [CooperativeController::class, 'createCooperative']);
     Route::post('member/login', [CooperativeController::class, 'loginCooperative']);
+    Route::post('loan/product/add', [CooperativeController::class, 'createLoanProduct']);
+    Route::post('loan/product/edit', [CooperativeController::class, 'editLoanProduct']);
 });
 Route::prefix('member')->group(function () {
     Route::post('create', [AdminController::class, 'createMember']);
@@ -45,6 +47,8 @@ Route::prefix('loan')->group(function () {
     Route::post('disbursement-check', [AdminController::class, 'disbursementCheck']);
     Route::post('disbursement-check-manual', [AdminController::class, 'disbursementCheckAuthorization']);
     Route::post('disburse', [AdminController::class, 'disburseLoan']);
+    Route::post('edit/amount', [AdminController::class, 'editLoanAmount']);
+
 });
 
 Route::prefix('admin')->group(function () {

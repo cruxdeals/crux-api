@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Http\Requests\Cooperative;
+namespace App\Http\Requests\Loan;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Auth\Access\AuthorizationException;
 
-class ListCooperativesRequest extends FormRequest
+class EditLoanAmountRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -27,9 +27,9 @@ class ListCooperativesRequest extends FormRequest
     public function rules()
     {
         return [
-            'search_text'=>'nullable',
-            'page_size' => 'nullable',
-            'status' => 'required'
+            'id' => 'required',
+            'amount' => 'required',
+            'duration' => 'required'
         ];
     }
 
