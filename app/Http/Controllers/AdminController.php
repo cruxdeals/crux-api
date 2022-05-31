@@ -19,6 +19,7 @@ use App\Http\Requests\Cooperative\OneCooperativeRequest;
 use App\Http\Requests\Cooperative\EditCooperativeRequest;
 use App\Http\Requests\Cooperative\ListCooperativesRequest;
 use App\Http\Requests\Cooperative\ListCooperativeMembersRequest;
+use App\Http\Requests\Cooperative\ChangeCooperativeStatusRequest;
 
 class AdminController extends Controller
 {
@@ -136,29 +137,32 @@ class AdminController extends Controller
 
         //make payment
 
-        if (!$loan->payment_reference) {
-            $payment_reference = "LOAN" . $loan->loanid . "_" . date("YmdHis");
-            $loan->payment_reference = $payment_reference;
-            $loan->save();
-        }
+        // if (!$loan->payment_reference) {
+        //     $payment_reference = "LOAN" . $loan->loanid . "_" . date("YmdHis");
+        //     $loan->payment_reference = $payment_reference;
+        //     $loan->save();
+        // }
 
         $amount = filter_var($loan->amount, FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
         $narration = $loan->loanid . "- CRUX Disbursed Loan";
-        $giroreference = MonnifyServices::disburse($bankcode, $account_number, $amount, $narration, $loan->payment_reference);
+        // $giroreference = MonnifyServices::disburse($bankcode, $account_number, $amount, $narration, $loan->payment_reference);
 
-        if ($giroreference['status'] == "error") {
-            $response = "Payment Error with Monnify, please check payment reference for transaction status!";
-            $loan->monnify_response = $response;
-            $loan->save();
-            return response()->json(['status' => 'error', 'message' => 'Error disbursing money with monify'], 400);
-        } else {
-            $response = "Payment Completed with Monnify!";
-            $loan->status = "2";
-            $loan->monnify_response = $response;
-            $loan->save();
+        // if ($giroreference['status'] == "error") {
+        //     $response = "Payment Error with Monnify, please check payment reference for transaction status!";
+        //     $loan->monnify_response = $response;
+        //     $loan->save();
+        //     return response()->json(['status' => 'error', 'message' => 'Error disbursing money with monify'], 400);
+        // } else {
+        //     $response = "Payment Completed with Monnify!";
+        //     $loan->status = "2";
+        //     $loan->monnify_response = $response;
+        //     $loan->save();
 
-            return response()->json(['status' => 'success', 'message' => 'Loan Disbursed Successfully'], 200);
-        }
+        //     return response()->json(['status' => 'success', 'message' => 'Loan Disbursed Successfully'], 200);
+        // }
+        $loan->status = "2";
+        $loan->save();
+        return response()->json(['status' => 'success', 'message' => 'Loan Disbursed Successfully'], 200);
 
     }
 
@@ -286,5 +290,18 @@ class AdminController extends Controller
         if($update){
             return response()->json(['status'=>'success','message'=>'cooperative updated successfully'],200);
         }
+    }
+
+    public function changeCooperativeStatus(ChangeCooperativeStatusRequest $request)
+    {
+        if (!$coop = Cooperative::where('id', $request->id)->first()) {
+            return response()->json(['status' => 'error', 'message' => "Cooperative Not Found"], 400);
+        }
+
+        $status = $request->status;
+        $coop->status = $status;
+        $coop->save();
+
+        return response()->json(['status'=>'success','message'=>'Status Changed Successfully'],200);
     }
 }

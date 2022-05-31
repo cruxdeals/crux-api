@@ -55,5 +55,6 @@ Route::prefix('admin')->group(function () {
     Route::post('cooperative/list', [AdminController::class, 'listCooperatives']);
     Route::post('cooperative/members/list', [AdminController::class, 'listCooperativeMembers']);
     Route::post('cooperative/edit', [AdminController::class, 'EditCooperative']);
+    Route::post('cooperative/status/change', [AdminController::class, 'changeCooperativeStatus']);
 });
 
