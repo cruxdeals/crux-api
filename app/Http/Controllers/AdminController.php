@@ -16,6 +16,8 @@ use App\Http\Requests\Loan\DisburseLoanRequest;
 use App\Http\Requests\Member\CreateMemberRequest;
 use App\Http\Requests\Loan\DisbursementCheckRequest;
 use App\Http\Requests\Cooperative\OneCooperativeRequest;
+use App\Http\Requests\Cooperative\EditCooperativeRequest;
+use App\Http\Requests\Cooperative\ListCooperativesRequest;
 use App\Http\Requests\Cooperative\ListCooperativeMembersRequest;
 
 class AdminController extends Controller
@@ -234,5 +236,55 @@ class AdminController extends Controller
 
         return response()->json(['status'=>'success','members'=>$members],200);
 
+    }
+
+    public function listCooperatives(ListCooperativesRequest $request)
+    {
+        $cooperatives = Cooperative::query();
+        if($request->search_text){
+            $search_text = $request->search_text;
+            $cooperatives = $cooperatives->where(function($query) use ($search_text){
+                $query->where('coop_id',$search_text)
+                ->orWhere('coop_name', 'LIKE', "%{$search_text}%")
+                ->orWhere('email',$search_text)
+                ->orWhere('telephone',$search_text);
+            });
+        }
+
+        $cooperatives = $cooperatives->orderBy('id','DESC')->paginate($request->page_szie);
+        return response()->json(['status'=>'success','cooperatives'=>$cooperatives],200);
+    }
+
+    public function EditCooperative(EditCooperativeRequest $request)
+    {
+        if (!$coop = Cooperative::where('id', $request->id)->first()) {
+            return response()->json(['status' => 'error', 'message' => "Cooperative Not Found"], 400);
+        }
+
+        $field = [
+            'coop_id' => $request->coop_id ?? $coop->coop_id,
+            'coop_name' => $request->coop_name ?? $coop->coop_name,
+            'email' => $request->email ?? $coop->email,
+            'telephone' => $request->telephone ?? $coop->telephone,
+            'coop_type' => $request->coop_type ?? $coop->coop_type,
+            'affiliate_organization' => $request->affiliate_organization ?? $coop->affiliate_organization,
+            'country' => $request->country ?? $coop->country,
+            'address' => $request->address ?? $coop->address,
+            'city' => $request->city ?? $coop->city,
+            'state' => $request->state ?? $coop->state,
+            'interest_rate' => $request->interest_rate ?? $coop->interest_rate,
+            'minimum_tenor' => $request->minimum_tenor ?? $coop->minimum_tenor,
+            'maximum_tenor' => $request->maximum_tenor ?? $coop->maximum_tenor,
+            'wallet_balance' => $request->wallet_balance ?? $coop->wallet_balance,
+            'commission_balance' => $request->commission_balance ?? $coop->commission_balance,
+            'commission_percent' => $request->commission_percent ?? $coop->commission_percent,
+            'approvals' => $request->approvals ?? $coop->approvals,
+            'suretees' => $request->suretees ?? $coop->suretees,
+        ];
+
+        $update = $coop->update($field);
+        if($update){
+            return response()->json(['status'=>'success','message'=>'cooperative updated successfully'],200);
+        }
     }
 }

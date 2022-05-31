@@ -52,6 +52,8 @@ Route::prefix('admin')->group(function () {
     Route::post('loan/all', [AdminController::class, 'allLoans']);
     Route::post('loan/cancel', [AdminController::class, 'cancelLoan']);
     Route::post('cooperative/one', [AdminController::class, 'viewOneCooperative']);
+    Route::post('cooperative/list', [AdminController::class, 'listCooperatives']);
     Route::post('cooperative/members/list', [AdminController::class, 'listCooperativeMembers']);
+    Route::post('cooperative/edit', [AdminController::class, 'EditCooperative']);
 });
 
